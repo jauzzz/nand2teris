@@ -1,0 +1,5 @@
+/tools
+*.tst
+*.cmp
+*.out
+.DS_Store
