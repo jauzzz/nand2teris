@@ -1,46 +1,83 @@
-# -*- coding: utf-8 -*-
-
-import os
-
-
 class Parser(object):
-    
-    def __init__(self, text, filename):
-        self.text = text                
-        self.filename = filename
-        self.lines = self.format_text()
-        self.length = len(self.lines)
+
+    def __init__(self, filename):
+        self.lines = self.read(filename)
         self.index = 0
-        self.jump_count = 0
-        self.result = []
-        # command_dict
-        self.command_dict = {
+        self.length = len(self.lines)
+
+    def hasMoreCommands(self):
+        return self.index < self.length
+
+    def advance(self):
+        self.command = self.current.split(' ')
+        self.index += 1
+
+    @property
+    def commandType(self):
+        return self.command[0]
+
+    @property
+    def arg1(self):
+        if len(self.command) > 1:
+            return self.command[1]
+        raise Exception('No arg1')
+    
+    @property
+    def arg2(self):
+        if len(self.command) > 2:
+            return self.command[2]
+        raise Exception('No arg2')
+
+    # util function
+    def read(self, filename):
+        with open(filename, 'r') as f:
+            text = f.read()
+            lines = text.splitlines()
+            lines = self.format_line(lines)
+            return lines
+
+    def format_line(self, lines):
+        # ignore blank line and comment
+        result = []
+        for l in lines:
+            line = l.strip()
+            if line and line.startswith("//") is False:
+                result.append(line)
+        return result
+
+    @property
+    def current(self):
+        return self.lines[self.index]
+
+
+class CodeWriter(object):
+
+    def __init__(self, filename):
+        self.asm = []
+        self.target = self.target_file(filename)
+        # command Dict
+        self.commandDict = {
             'add': 'C_ARITHMETIC',
             'sub': 'C_ARITHMETIC',
             'neg': 'C_ARITHMETIC',
-            'eq': 'C_ARITHMETIC',
-            'gt': 'C_ARITHMETIC',
-            'lt': 'C_ARITHMETIC',
+             'eq': 'C_ARITHMETIC',
+             'gt': 'C_ARITHMETIC',
+             'lt': 'C_ARITHMETIC',
             'and': 'C_ARITHMETIC',
-            'or': 'C_ARITHMETIC',
+             'or': 'C_ARITHMETIC',
             'not': 'C_ARITHMETIC',
-            'push': 'C_PUSH',
+           'push': 'C_PUSH',
             'pop': 'C_POP',
+          'label': 'C_LABEL',
+           'goto': 'C_GOTO',
+        'if-goto': 'C_IF',
+       'function': 'C_FUNCTION',
+         'return': 'C_RETURN',
+           'call': 'C_CALL'
         }
-        # arithmetic function
-        self.arithmetic = {
-            'add': 'M=M+D',
-            'sub': 'M=M-D',
-            'neg': 'M=-M',
-            'and': 'M=M&D',
-            'or': 'M=M|D',
-            'not': 'M=!M',
-            'eq': 'D=M-D',
-            'gt': 'D=M-D',
-            'lt': 'D=M-D',            
-        }
-        # condition
-        self.condition = {
+        # jump Dict
+        self.jump_count = 0
+        self.jumpDict = {
             'eq': 'JEQ',
             'gt': 'JGT',
             'lt': 'JLT',
@@ -57,98 +94,113 @@ class Parser(object):
             'static': 16, # Edit R16-255
         }
 
-    def format_text(self):
-        # remove comment and blank lines
-        text = self.text.splitlines()
-        text = filter(lambda x: x != '', text)
-        text = filter(lambda x: x.strip().startswith('//') is False, text)
-        return list(text)
+    def setFileName(self, filename):
+        self.filename = filename.replace('.vm', '').split('/')[-1]
 
-    def hasMoreCommand(self):
-        return self.index < self.length
-
-    def advance(self):
-        if self.hasMoreCommand():
-            self.write('// ' + self.lines[self.index])
-            self.process()       
-            self.increment_index()
-            self.advance()        
-
-    def increment_index(self):
-        self.index += 1
-
-    def increment_jump(self):
-        self.jump_count += 1
-    
-    def process(self):
-        """
-        ARITHMETIC
-            - Number
-                - One Operand: neg、not
-                - Two Operand: add/sub, and/or
-            - Jump: eq/gt/lt
-        Memory (PUSH/POP)
-            - Static
-            - Argument
-            - Local
-            - This/That
-            - Pointer
-            - Constant
-            - Temp
-        """
-        if self.command_type == 'C_ARITHMETIC':
-            self.writeArithmetic()
-        elif self.command_type == 'C_PUSH':
-            self.writePush()
-        elif self.command_type == 'C_POP':
-            self.writePop()
-
-    def writeArithmetic(self):
-        command = self.current[0]
-        if command not in ['neg', 'not']:
+    def writeArithmetic(self, command):
+        if command in ["add", "sub", "and", "or", "eq", "gt", "lt"]:
             self.pop_stack_to_D()
         
-        self.decrement_sp()
-        self.set_A_to_stack()
-        self.calculate()
-
-        # Jump
-        if command in ['eq', 'gt', 'lt']:
+        self.decrement_SP()
+        self.set_stack_to_A()
+        
+        if command == 'add':
+            self.write('M=M+D')
+        elif command == 'sub':
+            self.write('M=M-D')
+        elif command == 'and':
+            self.write('M=M&D')
+        elif command == 'or':
+            self.write('M=M|D')
+        elif command == 'neg':
+            self.write('M=-M')
+        elif command == 'not':
+            self.write('M=!M')
+        elif command in ["eq", "gt", "lt"]:
+            self.write('D=M-D')
+            # write jump
             self.write('@JUMP{}'.format(self.jump_count))
-            self.write('D;{cond}'.format(cond=self.condition.get(command)))
+            self.write('D;{}'.format(self.jumpDict.get(command)))
             # default write
-            self.set_A_to_stack()
+            self.set_stack_to_A()
             self.write('M=0')
             self.write('@ENDJUMP{}'.format(self.jump_count))
             self.write('0;JMP')
             # define jump
             self.write('(JUMP{})'.format(self.jump_count))
-            self.set_A_to_stack()
+            self.set_stack_to_A()
             self.write('M=-1')
             # define endjump
-            self.write('(ENDJUMP{})'.format(self.jump_count))            
-            self.increment_jump()
-        
-        self.increment_sp()
+            self.write('(ENDJUMP{}'.format(self.jump_count))
+            self.increment_SP()
+        else:
+            raise Exception("Unknown Arithmetic: {}".format(command))
 
-    def write(self, s):
-        self.result.append(s)
+    def writePushPop(self, command, segment, index):                        
+        self.resolve_address(segment, index)
 
-    def calculate(self):
-        func = self.arithmetic.get(self.current[0])        
-        self.write(func)
+        if command == 'C_PUSH':
+            self.writePush(segment)
+        elif command == 'C_POP':
+            self.writePop() 
 
-    def decrement_sp(self):
+    def close(self):
+        codes = "\n".join(self.asm)        
+        self.target.write(codes)
+        self.target.write("\n")
+        self.target.close()
+
+    # util function
+    def resolve_address(self, segment, index):
+        base = self.address.get(segment)
+        if segment == "constant":
+            self.write('@{}'.format(index))
+        if segment in ["argument", "local", "this", "that"]:
+            self.write('@{}'.format(base))
+            self.write('D=A')
+            self.write('@{}'.format(index))
+            self.write('D=D+A')
+            self.write('A=D')                
+        elif segment == "static":
+            self.write('@{filename}.{index}'.format(filename=self.filename, index=index))
+        elif segment in ["temp", "pointer"]:
+            addr = base + int(index)
+            self.write("@R{}".format(addr))
+    
+    def writePush(self, segment):
+        # memory to stack               
+        if segment == 'constant':
+            self.write('D=A')
+        else:
+            self.write('D=M')
+        self.push_D_to_stack()
+
+    def writePop(self):
+        # stack to memory
+        self.write('D=A')
+        self.write('@R13')
+        self.write('M=D')
+        self.pop_stack_to_D()
+        self.write('@13')
+        self.write('A=M')
+        self.write('M=D')        
+
+    def decrement_SP(self):
         self.write('@SP')
         self.write('M=M-1')
 
-    def increment_sp(self):
+    def increment_SP(self):
         self.write('@SP')
         self.write('M=M+1')
 
-    def set_A_to_stack(self):
+    def set_stack_to_A(self):
         self.write('@SP')
         self.write('A=M')
+
+    def push_D_to_stack(self):
+        self.set_stack_to_A()
+        self.write('M=D')
+        self.increment_SP()
 
     def pop_stack_to_D(self):
         self.write('@SP')
@@ -156,103 +208,42 @@ class Parser(object):
         self.write('A=M')
         self.write('D=M')
 
-    def push_D_to_stack(self):
-        self.write('@SP')
-        self.write('A=M')
-        self.write('M=D')
-        self.increment_sp()
+    def get_command_type(self, command):
+        return self.commandDict.get(command)
 
-    def writePush(self):
-        # push: where, what
-        # load M[address] to D
-        segment, num = self.args1, self.args2
-        self.resolve_address(segment, num)
-        
-        if segment == 'constant':
-            self.write('D=A')
-        else:
-            self.write('D=M')
-        self.push_D_to_stack()
+    def target_file(self, filename):
+        name = filename.replace('.vm', '.asm')
+        f = open(name, 'w+')
+        return f
 
-    def resolve_address(self, segment, num):
-        if segment == 'constant':
-            self.write('@{num}'.format(num=num))
-        elif segment == 'static':
-            self.write('@{filename}.{num}'.format(filename=self.filename, num=num))
-        elif segment in ['local', 'argument', 'this', 'that']:
-            base = self.address.get(segment)
-            self.write('@{base}'.format(base=base))
-            self.write('D=M')
-            self.write('@{num}'.format(num=num))
-            self.write('A=A+D')
-        elif segment in ['pointer', 'temp']:
-            base = self.address.get(segment)
-            addr = base + int(num)            
-            self.write('@R{addr}'.format(addr=addr))
-
-    def writePop(self):
-        # load D to M[address]
-        segment, num = self.args1, self.args2
-        self.resolve_address(segment, num)
-        self.write('D=A')
-        # store A
-        self.write('@R13')
-        self.write('M=D')
-        self.pop_stack_to_D()
-        self.write('@R13')
-        self.write('A=M')
-        self.write('M=D')        
-
-    @property
-    def current(self):            
-        return self.lines[self.index].split(' ')
-
-    @property
-    def command_type(self):
-        com_type = self.current[0]
-        return self.command_dict.get(com_type)
-
-    @property
-    def args1(self):
-        return self.current[1]
-
-    @property
-    def args2(self):
-        return self.current[2]
-        
-
-class Writer(object):
-
-    def __init__(self, file_path):
-        self.path = file_path
-        self.dir = os.path.dirname(self.path)
-        self.fname = os.path.basename(self.path)
-        self.name = os.path.splitext(self.fname)[0]
-        self.target = os.path.join(self.dir, self.name + '.asm')
-        self.text = self.read()
-    
-    def setFileName(self):
-        pass
-
-    def read(self):
-        with open(self.path) as f:            
-            return f.read()
-
-    def translate(self, result):
-        result = '\n'.join(result)
-        with open(self.target, 'w+') as f:
-            f.write(result)
+    def write(self, s):
+        self.asm.append(s)
 
 
-def main(file_path):
-    writer = Writer(file_path)
-    parser = Parser(writer.text, writer.name)
-    parser.advance()    
-    writer.translate(parser.result)
+class Compile(object):
+
+    def __init__(self, file_path):        
+        self.cw = CodeWriter(file_path)
+        self.cw.setFileName(file_path)
+        self.translate()           
+
+    def translate(self):
+        parser = Parser(file_path)
+        while parser.hasMoreCommands():
+            parser.advance()
+            commandType = self.cw.get_command_type(parser.commandType)
+            if commandType == 'C_ARITHMETIC':
+                self.cw.writeArithmetic(parser.commandType)
+            elif commandType == 'C_PUSH':
+                self.cw.writePushPop('C_PUSH', parser.arg1, parser.arg2)
+            elif commandType == 'C_POP':
+                self.cw.writePushPop('C_POP', parser.arg1, parser.arg2)
+
+        self.cw.close()
 
 
 if __name__ == '__main__':
     import sys
     
     file_path = sys.argv[1]
-    main(file_path)
+    Compile(file_path)

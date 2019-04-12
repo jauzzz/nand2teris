@@ -1,4 +1,3 @@
-// push constant 17
 @17
 D=A
 @SP
@@ -6,7 +5,6 @@ A=M
 M=D
 @SP
 M=M+1
-// push constant 17
 @17
 D=A
 @SP
@@ -14,7 +12,6 @@ A=M
 M=D
 @SP
 M=M+1
-// eq
 @SP
 M=M-1
 A=M
@@ -24,21 +21,20 @@ M=M-1
 @SP
 A=M
 D=M-D
-@BOOL0
+@JUMP0
 D;JEQ
 @SP
 A=M
 M=0
-@ENDBOOL0
+@ENDJUMP0
 0;JMP
-(BOOL0)
+(JUMP0)
 @SP
 A=M
 M=-1
-(ENDBOOL0)
+(ENDJUMP0
 @SP
 M=M+1
-// push constant 17
 @17
 D=A
 @SP
@@ -46,7 +42,6 @@ A=M
 M=D
 @SP
 M=M+1
-// push constant 16
 @16
 D=A
 @SP
@@ -54,7 +49,6 @@ A=M
 M=D
 @SP
 M=M+1
-// eq
 @SP
 M=M-1
 A=M
@@ -64,21 +58,20 @@ M=M-1
 @SP
 A=M
 D=M-D
-@BOOL1
+@JUMP0
 D;JEQ
 @SP
 A=M
 M=0
-@ENDBOOL1
+@ENDJUMP0
 0;JMP
-(BOOL1)
+(JUMP0)
 @SP
 A=M
 M=-1
-(ENDBOOL1)
+(ENDJUMP0
 @SP
 M=M+1
-// push constant 16
 @16
 D=A
 @SP
@@ -86,7 +79,6 @@ A=M
 M=D
 @SP
 M=M+1
-// push constant 17
 @17
 D=A
 @SP
@@ -94,7 +86,6 @@ A=M
 M=D
 @SP
 M=M+1
-// eq
 @SP
 M=M-1
 A=M
@@ -104,21 +95,20 @@ M=M-1
 @SP
 A=M
 D=M-D
-@BOOL2
+@JUMP0
 D;JEQ
 @SP
 A=M
 M=0
-@ENDBOOL2
+@ENDJUMP0
 0;JMP
-(BOOL2)
+(JUMP0)
 @SP
 A=M
 M=-1
-(ENDBOOL2)
+(ENDJUMP0
 @SP
 M=M+1
-// push constant 892
 @892
 D=A
 @SP
@@ -126,7 +116,6 @@ A=M
 M=D
 @SP
 M=M+1
-// push constant 891
 @891
 D=A
 @SP
@@ -134,7 +123,6 @@ A=M
 M=D
 @SP
 M=M+1
-// lt
 @SP
 M=M-1
 A=M
@@ -144,21 +132,20 @@ M=M-1
 @SP
 A=M
 D=M-D
-@BOOL3
+@JUMP0
 D;JLT
 @SP
 A=M
 M=0
-@ENDBOOL3
+@ENDJUMP0
 0;JMP
-(BOOL3)
+(JUMP0)
 @SP
 A=M
 M=-1
-(ENDBOOL3)
+(ENDJUMP0
 @SP
 M=M+1
-// push constant 891
 @891
 D=A
 @SP
@@ -166,7 +153,6 @@ A=M
 M=D
 @SP
 M=M+1
-// push constant 892
 @892
 D=A
 @SP
@@ -174,7 +160,6 @@ A=M
 M=D
 @SP
 M=M+1
-// lt
 @SP
 M=M-1
 A=M
@@ -184,21 +169,20 @@ M=M-1
 @SP
 A=M
 D=M-D
-@BOOL4
+@JUMP0
 D;JLT
 @SP
 A=M
 M=0
-@ENDBOOL4
+@ENDJUMP0
 0;JMP
-(BOOL4)
+(JUMP0)
 @SP
 A=M
 M=-1
-(ENDBOOL4)
+(ENDJUMP0
 @SP
 M=M+1
-// push constant 891
 @891
 D=A
 @SP
@@ -206,7 +190,6 @@ A=M
 M=D
 @SP
 M=M+1
-// push constant 891
 @891
 D=A
 @SP
@@ -214,7 +197,6 @@ A=M
 M=D
 @SP
 M=M+1
-// lt
 @SP
 M=M-1
 A=M
@@ -224,21 +206,20 @@ M=M-1
 @SP
 A=M
 D=M-D
-@BOOL5
+@JUMP0
 D;JLT
 @SP
 A=M
 M=0
-@ENDBOOL5
+@ENDJUMP0
 0;JMP
-(BOOL5)
+(JUMP0)
 @SP
 A=M
 M=-1
-(ENDBOOL5)
+(ENDJUMP0
 @SP
 M=M+1
-// push constant 32767
 @32767
 D=A
 @SP
@@ -246,7 +227,6 @@ A=M
 M=D
 @SP
 M=M+1
-// push constant 32766
 @32766
 D=A
 @SP
@@ -254,7 +234,6 @@ A=M
 M=D
 @SP
 M=M+1
-// gt
 @SP
 M=M-1
 A=M
@@ -264,21 +243,20 @@ M=M-1
 @SP
 A=M
 D=M-D
-@BOOL6
+@JUMP0
 D;JGT
 @SP
 A=M
 M=0
-@ENDBOOL6
+@ENDJUMP0
 0;JMP
-(BOOL6)
+(JUMP0)
 @SP
 A=M
 M=-1
-(ENDBOOL6)
+(ENDJUMP0
 @SP
 M=M+1
-// push constant 32766
 @32766
 D=A
 @SP
@@ -286,7 +264,6 @@ A=M
 M=D
 @SP
 M=M+1
-// push constant 32767
 @32767
 D=A
 @SP
@@ -294,7 +271,6 @@ A=M
 M=D
 @SP
 M=M+1
-// gt
 @SP
 M=M-1
 A=M
@@ -304,21 +280,20 @@ M=M-1
 @SP
 A=M
 D=M-D
-@BOOL7
+@JUMP0
 D;JGT
 @SP
 A=M
 M=0
-@ENDBOOL7
+@ENDJUMP0
 0;JMP
-(BOOL7)
+(JUMP0)
 @SP
 A=M
 M=-1
-(ENDBOOL7)
+(ENDJUMP0
 @SP
 M=M+1
-// push constant 32766
 @32766
 D=A
 @SP
@@ -326,7 +301,6 @@ A=M
 M=D
 @SP
 M=M+1
-// push constant 32766
 @32766
 D=A
 @SP
@@ -334,7 +308,6 @@ A=M
 M=D
 @SP
 M=M+1
-// gt
 @SP
 M=M-1
 A=M
@@ -344,21 +317,20 @@ M=M-1
 @SP
 A=M
 D=M-D
-@BOOL8
+@JUMP0
 D;JGT
 @SP
 A=M
 M=0
-@ENDBOOL8
+@ENDJUMP0
 0;JMP
-(BOOL8)
+(JUMP0)
 @SP
 A=M
 M=-1
-(ENDBOOL8)
+(ENDJUMP0
 @SP
 M=M+1
-// push constant 57
 @57
 D=A
 @SP
@@ -366,7 +338,6 @@ A=M
 M=D
 @SP
 M=M+1
-// push constant 31
 @31
 D=A
 @SP
@@ -374,7 +345,6 @@ A=M
 M=D
 @SP
 M=M+1
-// push constant 53
 @53
 D=A
 @SP
@@ -382,7 +352,6 @@ A=M
 M=D
 @SP
 M=M+1
-// add
 @SP
 M=M-1
 A=M
@@ -391,10 +360,7 @@ D=M
 M=M-1
 @SP
 A=M
-M=D+M
-@SP
-M=M+1
-// push constant 112
+M=M+D
 @112
 D=A
 @SP
@@ -402,7 +368,6 @@ A=M
 M=D
 @SP
 M=M+1
-// sub
 @SP
 M=M-1
 A=M
@@ -411,19 +376,13 @@ D=M
 M=M-1
 @SP
 A=M
-M=D-M
-@SP
-M=M+1
-// neg
+M=M-D
 @SP
 M=M-1
 @SP
 A=M
 M=-M
 @SP
-M=M+1
-// and
-@SP
 M=M-1
 A=M
 D=M
@@ -431,10 +390,7 @@ D=M
 M=M-1
 @SP
 A=M
-M=D&M
-@SP
-M=M+1
-// push constant 82
+M=M&D
 @82
 D=A
 @SP
@@ -442,7 +398,6 @@ A=M
 M=D
 @SP
 M=M+1
-// or
 @SP
 M=M-1
 A=M
@@ -451,14 +406,9 @@ D=M
 M=M-1
 @SP
 A=M
-M=D|M
-@SP
-M=M+1
-// not
+M=M|D
 @SP
 M=M-1
 @SP
 A=M
 M=!M
-@SP
-M=M+1
