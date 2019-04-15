@@ -361,6 +361,8 @@ M=M-1
 @SP
 A=M
 M=M+D
+@SP
+M=M+1
 @112
 D=A
 @SP
@@ -378,10 +380,14 @@ M=M-1
 A=M
 M=M-D
 @SP
+M=M+1
+@SP
 M=M-1
 @SP
 A=M
 M=-M
+@SP
+M=M+1
 @SP
 M=M-1
 A=M
@@ -391,6 +397,8 @@ M=M-1
 @SP
 A=M
 M=M&D
+@SP
+M=M+1
 @82
 D=A
 @SP
@@ -408,7 +416,11 @@ M=M-1
 A=M
 M=M|D
 @SP
+M=M+1
+@SP
 M=M-1
 @SP
 A=M
 M=!M
+@SP
+M=M+1

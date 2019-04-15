@@ -132,11 +132,12 @@ class CodeWriter(object):
             self.write('M=-1')
             # define endjump
             self.write('(ENDJUMP{}'.format(self.jump_count))
-            self.increment_SP()
         else:
             raise Exception("Unknown Arithmetic: {}".format(command))
+        
+        self.increment_SP()
 
-    def writePushPop(self, command, segment, index):                        
+    def writePushPop(self, command, segment, index):
         self.resolve_address(segment, index)
 
         if command == 'C_PUSH':
@@ -157,10 +158,9 @@ class CodeWriter(object):
             self.write('@{}'.format(index))
         if segment in ["argument", "local", "this", "that"]:
             self.write('@{}'.format(base))
-            self.write('D=A')
+            self.write('D=M')
             self.write('@{}'.format(index))
-            self.write('D=D+A')
-            self.write('A=D')                
+            self.write('A=D+A')                         
         elif segment == "static":
             self.write('@{filename}.{index}'.format(filename=self.filename, index=index))
         elif segment in ["temp", "pointer"]:
@@ -181,7 +181,7 @@ class CodeWriter(object):
         self.write('@R13')
         self.write('M=D')
         self.pop_stack_to_D()
-        self.write('@13')
+        self.write('@R13')
         self.write('A=M')
         self.write('M=D')        
 

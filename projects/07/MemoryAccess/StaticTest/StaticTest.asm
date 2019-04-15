@@ -27,7 +27,7 @@ M=D
 M=M-1
 A=M
 D=M
-@13
+@R13
 A=M
 M=D
 @StaticTest.3
@@ -38,7 +38,7 @@ M=D
 M=M-1
 A=M
 D=M
-@13
+@R13
 A=M
 M=D
 @StaticTest.1
@@ -49,7 +49,7 @@ M=D
 M=M-1
 A=M
 D=M
-@13
+@R13
 A=M
 M=D
 @StaticTest.3
@@ -75,6 +75,8 @@ M=M-1
 @SP
 A=M
 M=M-D
+@SP
+M=M+1
 @StaticTest.8
 D=M
 @SP
@@ -91,3 +93,5 @@ M=M-1
 @SP
 A=M
 M=M+D
+@SP
+M=M+1
