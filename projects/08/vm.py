@@ -73,7 +73,7 @@ class CodeWriter(object):
         'if-goto': 'C_IF',
        'function': 'C_FUNCTION',
          'return': 'C_RETURN',
-           'call': 'C_CALL'
+           'call': 'C_CALL',
         }
         # jump Dict
         self.jump_count = 0
@@ -132,11 +132,12 @@ class CodeWriter(object):
             self.write('M=-1')
             # define endjump
             self.write('(ENDJUMP{}'.format(self.jump_count))
-            self.increment_SP()
         else:
             raise Exception("Unknown Arithmetic: {}".format(command))
+        
+        self.increment_SP()
 
-    def writePushPop(self, command, segment, index):                        
+    def writePushPop(self, command, segment, index):
         self.resolve_address(segment, index)
 
         if command == 'C_PUSH':
@@ -144,37 +145,23 @@ class CodeWriter(object):
         elif command == 'C_POP':
             self.writePop() 
 
-    def close(self):
-        codes = "\n".join(self.asm)        
-        self.target.write(codes)
-        self.target.write("\n")
-        self.target.close()
-
-    def writeInit(self):
-        # bootstrap code
-        pass
-
     def writeLabel(self, label):
-        self.write('({}.{})'.format(self.filename, label))        
+        self.write('({}${})'.format(self.filename, label))
 
     def writeGoto(self, label):
         self.write('@{}.{}'.format(self.filename, label))
         self.write('0;JMP')
 
     def writeIf(self, label):
-        self.set_stack_to_A()
-        self.write('D=M')
+        self.pop_stack_to_D()
         self.write('@{}.{}'.format(self.filename, label))
         self.write('D;JNE')
 
-    def writeCall(self, function, numArgs):
-        pass
-
-    def writeReturn(self):
-        pass
-
-    def writeFunction(self, function, numLocals):
-        pass
+    def close(self):
+        codes = "\n".join(self.asm)        
+        self.target.write(codes)
+        self.target.write("\n")
+        self.target.close()
 
     # util function
     def resolve_address(self, segment, index):
@@ -183,10 +170,9 @@ class CodeWriter(object):
             self.write('@{}'.format(index))
         if segment in ["argument", "local", "this", "that"]:
             self.write('@{}'.format(base))
-            self.write('D=A')
+            self.write('D=M')
             self.write('@{}'.format(index))
-            self.write('D=D+A')
-            self.write('A=D')                
+            self.write('A=D+A')                         
         elif segment == "static":
             self.write('@{filename}.{index}'.format(filename=self.filename, index=index))
         elif segment in ["temp", "pointer"]:
@@ -207,7 +193,7 @@ class CodeWriter(object):
         self.write('@R13')
         self.write('M=D')
         self.pop_stack_to_D()
-        self.write('@13')
+        self.write('@R13')
         self.write('A=M')
         self.write('M=D')        
 
@@ -270,15 +256,7 @@ class Compile(object):
                 self.cw.writeGoto(parser.arg1)
             elif commandType == 'C_IF':
                 self.cw.writeIf(parser.arg1)
-            elif commandType == 'C_CALL':
-                self.cw.writeCall(parser.arg1, parser.arg2)
-            elif commandType == 'C_RETURN':
-                self.cw.writeReturn()
-            elif commandType == 'C_FUNCTION':
-                self.cw.writeFunction(parser.arg1, parser.arg2)
-            else:
-                raise Exception("Unknown commandType")
-
+            
         self.cw.close()
 
 
