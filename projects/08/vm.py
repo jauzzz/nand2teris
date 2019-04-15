@@ -1,3 +1,6 @@
+import os
+
+
 class Parser(object):
 
     def __init__(self, filename):
@@ -76,6 +79,7 @@ class CodeWriter(object):
            'call': 'C_CALL',
         }
         # jump Dict
+        self.call_count = 0
         self.jump_count = 0
         self.jumpDict = {
             'eq': 'JEQ',
@@ -94,8 +98,19 @@ class CodeWriter(object):
             'static': 16, # Edit R16-255
         }
 
+        # write_init
+        self.write_init()
+
     def setFileName(self, filename):
         self.filename = filename.replace('.vm', '').split('/')[-1]
+
+    def write_init(self):
+        self.write('@256')
+        self.write('D=A')
+        self.write('@SP')
+        self.write('M=D')
+        # call init
+        self.writeCall('Sys.init', 0)
 
     def writeArithmetic(self, command):
         if command in ["add", "sub", "and", "or", "eq", "gt", "lt"]:
@@ -149,13 +164,105 @@ class CodeWriter(object):
         self.write('({}${})'.format(self.filename, label))
 
     def writeGoto(self, label):
-        self.write('@{}.{}'.format(self.filename, label))
+        self.write('@{}${}'.format(self.filename, label))
         self.write('0;JMP')
 
     def writeIf(self, label):
         self.pop_stack_to_D()
         self.write('@{}.{}'.format(self.filename, label))
         self.write('D;JNE')
+
+    def writeFunction(self, function, numLocals):
+        self.write('({})'.format(function))
+
+        # TODO: why push local 0
+        numLocals = int(numLocals)
+        while numLocals > 0:
+            self.write('D=0')
+            self.push_D_to_stack()
+            numLocals -= 1
+
+    def writeCall(self, function, numArgs):
+        RET = 'RET.{}.{}'.format(function, self.call_count)
+        self.call_count += 1
+
+        self.write('@{}'.format(RET))
+        self.write('D=A')
+        self.push_D_to_stack()
+
+        for seg in ["LCL", "ARG", "THIS", "THAT"]:
+            self.write('@{}'.format(seg))
+            self.write('D=M')
+            self.push_D_to_stack()
+
+        # reposition LCL
+        self.write('@SP')
+        self.write('D=M')
+        self.write('@LCL')
+        self.write('M=D')
+
+        # repostion ARG
+        self.write('@{}'.format(int(numArgs) + 5))
+        self.write('D=D-A')
+        self.write('@ARG')
+        self.write('M=D')
+
+        # goto function
+        self.write('@{}'.format(function))
+        self.write('0;JMP')
+
+        # return address
+        self.write('({})'.format(RET))        
+
+    def writeReturn(self):
+        FRAME = 'R13'
+        RET = 'R14'
+
+        # FRAME = LCL
+        self.write('@LCL')
+        self.write('D=M')
+        self.write('@{}'.format(FRAME))
+        self.write('M=D')
+
+        # RETURN = *(FRAME-5)
+        self.write('@{}'.format(FRAME))
+        self.write('D=M')
+        self.write('@5')
+        self.write('D=D-A')
+        self.write('A=D')
+        self.write('D=M')
+        self.write('@{}'.format(RET))
+        self.write('M=D')
+
+        # pop()
+        self.pop_stack_to_D()
+        self.write('@ARG')
+        self.write('A=M')
+        self.write('M=D')
+
+        # SP = ARG + 1
+        self.write('@ARG')
+        self.write('D=M')
+        self.write('@SP')
+        self.write('M=D+1')
+
+        # restore function scope
+        offset = 1
+        for seg in ['THAT', 'THIS', 'ARG', 'LCL']:
+            self.write('@{}'.format(FRAME))
+            self.write('D=M')
+            self.write('@{}'.format(offset))
+            self.write('D=D-A')
+            self.write('A=D')
+            self.write('D=M')
+            self.write('@{}'.format(seg))
+            self.write('M=D')
+            offset += 1
+
+        # return
+        self.write('@{}'.format(RET))
+        self.write('A=M')
+        self.write('0;JMP')
 
     def close(self):
         codes = "\n".join(self.asm)        
@@ -235,13 +342,28 @@ class CodeWriter(object):
 class Compile(object):
 
     def __init__(self, file_path):
-        self.cw = CodeWriter(file_path)
-        self.cw.setFileName(file_path)
-        self.translate()           
+        self.files = file_path
 
-    def translate(self):
+        if len(file_path) > 1:
+            ele = file_path[-1]
+            fname = ele.split('/')[-2] + '.asm'
+            dirname = os.path.dirname(ele)
+            name = os.path.join(dirname, fname)
+            self.cw = CodeWriter(name)
+        else:
+            self.cw = CodeWriter(file_path[0])
+
+        for f in self.files:
+            self._compile(f)
+        self.cw.close()
+
+    def _compile(self, file_path):        
+        self.cw.setFileName(file_path)
+        self.translate(file_path)
+
+    def translate(self, file_path):
         parser = Parser(file_path)
-        while parser.hasMoreCommands():
+        while parser.hasMoreCommands():            
             parser.advance()
             commandType = self.cw.get_command_type(parser.commandType)
             if commandType == 'C_ARITHMETIC':
@@ -256,12 +378,16 @@ class Compile(object):
                 self.cw.writeGoto(parser.arg1)
             elif commandType == 'C_IF':
                 self.cw.writeIf(parser.arg1)
+            elif commandType == 'C_FUNCTION':
+                self.cw.writeFunction(parser.arg1, parser.arg2)
+            elif commandType == 'C_CALL':
+                self.cw.writeCall(parser.arg1, parser.arg2)
+            elif commandType == 'C_RETURN':
+                self.cw.writeReturn()
             
-        self.cw.close()
-
 
 if __name__ == '__main__':
     import sys
     
-    file_path = sys.argv[1]
+    file_path = sys.argv[1:]
     Compile(file_path)
