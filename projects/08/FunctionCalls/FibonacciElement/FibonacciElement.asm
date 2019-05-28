@@ -2,7 +2,7 @@
 D=A
 @SP
 M=D
-@Sys.initRET0
+@RET.Sys.init.0
 D=A
 @SP
 A=M
@@ -41,31 +41,23 @@ M=M+1
 D=M
 @LCL
 M=D
-@SP
-D=M
 @5
 D=D-A
 @ARG
 M=D
 @Sys.init
-0;JMP
-(Sys.initRET0)
-//////
-// Main
-// function Main.fibonacci 0
+(@RET.Sys.init.0)
 (Main.fibonacci)
-// push argument 0
 @ARG
 D=M
 @0
-A=D+A
+A=A+D
 D=M
 @SP
 A=M
 M=D
 @SP
 M=M+1
-// push constant 2
 @2
 D=A
 @SP
@@ -73,60 +65,50 @@ A=M
 M=D
 @SP
 M=M+1
-// lt
 @SP
 M=M-1
+@SP
 A=M
 D=M
 @SP
 M=M-1
 @SP
 A=M
-D=M-D
-@BOOL0
-D;JLT
-@SP
-A=M
-M=0
-@ENDBOOL0
-0;JMP
-(BOOL0)
-@SP
-A=M
-M=-1
-(ENDBOOL0)
+M=M<D
 @SP
 M=M+1
-// if-goto IF_TRUE
 @SP
 M=M-1
+@SP
 A=M
 D=M
-@Main$IF_TRUE
+@FunctionCalls/FibonacciElement/FibonacciElement.asm$IF_TRUE
 D;JNE
-// goto IF_FALSE
-@Main$IF_FALSE
-0;JMP
-// label IF_TRUE
-(Main$IF_TRUE)
-// push argument 0
+@FunctionCalls/FibonacciElement/FibonacciElement.asm$IF_FALSE
+(FunctionCalls/FibonacciElement/FibonacciElement.asm$IF_TRUE)
 @ARG
 D=M
 @0
-A=D+A
+A=A+D
 D=M
 @SP
 A=M
 M=D
 @SP
 M=M+1
-// return
 @LCL
 D=M
 @R13
 M=D
+@R13
+D=M
+@5
+D=D-A
+@R14
+M=D
 @SP
 M=M-1
+@SP
 A=M
 D=M
 @ARG
@@ -168,31 +150,20 @@ A=D
 D=M
 @LCL
 M=D
-@R13
-D=M
-@5
-D=D-A
-A=D
-D=M
-@R14
-M=D
 @R14
 A=M
 0;JMP
-// label IF_FALSE
-(Main$IF_FALSE)
-// push argument 0
+(FunctionCalls/FibonacciElement/FibonacciElement.asm$IF_FALSE)
 @ARG
 D=M
 @0
-A=D+A
+A=A+D
 D=M
 @SP
 A=M
 M=D
 @SP
 M=M+1
-// push constant 2
 @2
 D=A
 @SP
@@ -200,9 +171,9 @@ A=M
 M=D
 @SP
 M=M+1
-// sub
 @SP
 M=M-1
+@SP
 A=M
 D=M
 @SP
@@ -212,8 +183,7 @@ A=M
 M=M-D
 @SP
 M=M+1
-// call Main.fibonacci 1
-@Main.fibonacciRET1
+@RET.Main.fibonacci.1
 D=A
 @SP
 A=M
@@ -252,27 +222,22 @@ M=M+1
 D=M
 @LCL
 M=D
-@SP
-D=M
 @6
 D=D-A
 @ARG
 M=D
 @Main.fibonacci
-0;JMP
-(Main.fibonacciRET1)
-// push argument 0
+(@RET.Main.fibonacci.1)
 @ARG
 D=M
 @0
-A=D+A
+A=A+D
 D=M
 @SP
 A=M
 M=D
 @SP
 M=M+1
-// push constant 1
 @1
 D=A
 @SP
@@ -280,9 +245,9 @@ A=M
 M=D
 @SP
 M=M+1
-// sub
 @SP
 M=M-1
+@SP
 A=M
 D=M
 @SP
@@ -292,8 +257,7 @@ A=M
 M=M-D
 @SP
 M=M+1
-// call Main.fibonacci 1
-@Main.fibonacciRET2
+@RET.Main.fibonacci.2
 D=A
 @SP
 A=M
@@ -332,18 +296,15 @@ M=M+1
 D=M
 @LCL
 M=D
-@SP
-D=M
 @6
 D=D-A
 @ARG
 M=D
 @Main.fibonacci
-0;JMP
-(Main.fibonacciRET2)
-// add
+(@RET.Main.fibonacci.2)
 @SP
 M=M-1
+@SP
 A=M
 D=M
 @SP
@@ -353,13 +314,19 @@ A=M
 M=M+D
 @SP
 M=M+1
-// return
 @LCL
 D=M
 @R13
 M=D
+@R13
+D=M
+@5
+D=D-A
+@R14
+M=D
 @SP
 M=M-1
+@SP
 A=M
 D=M
 @ARG
@@ -401,22 +368,10 @@ A=D
 D=M
 @LCL
 M=D
-@R13
-D=M
-@5
-D=D-A
-A=D
-D=M
-@R14
-M=D
 @R14
 A=M
 0;JMP
-//////
-// Sys
-// function Sys.init 0
 (Sys.init)
-// push constant 4
 @4
 D=A
 @SP
@@ -424,8 +379,7 @@ A=M
 M=D
 @SP
 M=M+1
-// call Main.fibonacci 1
-@Main.fibonacciRET3
+@RET.Main.fibonacci.3
 D=A
 @SP
 A=M
@@ -464,17 +418,11 @@ M=M+1
 D=M
 @LCL
 M=D
-@SP
-D=M
 @6
 D=D-A
 @ARG
 M=D
 @Main.fibonacci
-0;JMP
-(Main.fibonacciRET3)
-// label WHILE
-(Sys$WHILE)
-// goto WHILE
-@Sys$WHILE
-0;JMP
+(@RET.Main.fibonacci.3)
+(FunctionCalls/FibonacciElement/FibonacciElement.asm$WHILE)
+@FunctionCalls/FibonacciElement/FibonacciElement.asm$WHILE
