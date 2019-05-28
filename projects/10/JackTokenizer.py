@@ -1,32 +1,52 @@
+"""
+Jack Syntactic Elements
+    - white space and comments
+    - symbols: () [] {} , ; = . + - * / & | ~ < >
+    - reversed words
+        - class, constructor, method, function // Program components
+        - int, boolean, char, void // Primitive types
+        - var, static, field // Variable declarations
+        - let, do, if, else, while, return // Statements
+        - true, false, null // constant values
+        - this // object reference
+    - constants
+        - integer
+        - string
+        - boolean
+    - identifiers
+
+"""
+
 import re
 
 
 class JackTokenizer:
+    " Reference: https://docs.python.org/3/library/re.html#writing-a-tokenizer "
 
     token_specification = [
         ('integer', r'\d+'),
         ('string', r'\"([^"]*)\"'),
-        ('keyword', r'(class|constructor|method|function|int|boolean|char|void|var|static|field|let|do|if|else|while|return|true|false|null|this)'),
+        ('keyword',
+         r'(class|constructor|method|function|int|boolean|char|void|var|static|field|let|do|if|else|while|return|true|false|null|this)'
+         ),
         ('symbol', r'[+\-*\/\&\|\~\<\>\=\(\)\{\}\[\]\.\,\;]'),
         ('identifier', r'[A-Za-z_][A-Za-z_0-9]*'),
     ]
-    INLINE_COMMENT_REGEX    = re.compile(r'//.*\n')
+    INLINE_COMMENT_REGEX = re.compile(r'//.*\n')
     MULTILINE_COMMENT_REGEX = re.compile(r'/\*.*?\*/', flags=re.S)
-    XML_CONVSERSIONS = {
-        '<': '&lt;',
-        '>': '&gt;',
-        '&': '&amp;'
-    }
-    
+    XML_CONVSERSIONS = {'<': '&lt;', '>': '&gt;', '&': '&amp;'}
+
     tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in token_specification)
     get_token = re.compile(tok_regex)
 
     def __init__(self, input_file):
-        self.input = input_file.read()
+        token_file = open(input_file, 'r')
+
+        self.input = token_file.read()
         self.tokenizer = self.tokenize()
 
-    def advance(self):        
-        self.current_token = (self.next_token.lastgroup, self.next_token.group())        
+        # IO handle
+        token_file.close()
 
     def hasMoreTokens(self):
         try:
@@ -35,54 +55,38 @@ class JackTokenizer:
         except:
             return False
 
+    def advance(self):
+        self.current_token = (self.next_token.lastgroup,
+                              self.next_token.group())
+
     def tokenType(self):
         return self.current_token[0]
 
     def keyWord(self):
-        return self.current_token[1].upper()
+        return self.current_token[1]
 
     def symbol(self):
-        symbol = self.current_token[1]
-        if symbol in self.XML_CONVSERSIONS.keys():
-            symbol = self.XML_CONVSERSIONS[symbol]
-        return symbol
+        return self.current_token[1]
 
     def identifier(self):
         return self.current_token[1]
 
-    def intval(self):
+    def intVal(self):
         return self.current_token[1]
 
-    def stringval(self):
+    def stringVal(self):
         return self.current_token[1]
 
-    ### Non API
-    @property
-    def current_token(self):
-        if hasattr(self, 'current_token'):            
-            return self.current_token
-        else:
-            raise AttributeError()
-
-    @property
-    def xml_token(self):
-        typ = self.current_token[0]
-        val = self.current_token[1]
-        if typ == 'string':
-            typ = 'stringConstant'
-            val = val[1:-1]
-        if typ == 'integer':
-            typ = 'integerConstant'
-        if val in self.XML_CONVSERSIONS.keys():
-            val = self.XML_CONVSERSIONS[val]
-        return '<{typ}> {val} </{typ}>\n'.format(typ=typ, val=val)
-
+    # Non API
     def tokenize(self):
-        input_without_comments = self.remove_comments()
-        tokens = self.get_token.finditer(input_without_comments)
+        format_lines = self.format_lines()
+        tokens = self.get_token.finditer(format_lines)
         return tokens
 
-    def remove_comments(self):
-        without_multiline = re.sub(self.MULTILINE_COMMENT_REGEX, ' ', self.input)
-        without_inline = re.sub(self.INLINE_COMMENT_REGEX, '\n', without_multiline)
-        return without_inline
+    def format_lines(self):
+        without_multiline = re.sub(self.MULTILINE_COMMENT_REGEX, ' ',
+                                   self.input)
+        without_inline = re.sub(self.INLINE_COMMENT_REGEX, '\n',
+                                without_multiline)
+        format_lines = without_inline
+        return format_lines

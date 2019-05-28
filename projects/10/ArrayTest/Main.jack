@@ -7,7 +7,6 @@
 
 /** Computes the average of a sequence of integers. */
 class Main {
-	
     function void main() {
         var Array a;
         var int length;
