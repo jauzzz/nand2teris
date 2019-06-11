@@ -8,13 +8,38 @@
  * Note: Jack compilers implement multiplication and division using OS method calls.
  */
 class Math {
+    static Array bit_masks;
 
     /** Initializes the library. */
     function void init() {
+        let bit_masks = Array.new(16);
+        let bit_masks[0]  = 1;
+        let bit_masks[1]  = 2;
+        let bit_masks[2]  = 4;
+        let bit_masks[3]  = 8;
+        let bit_masks[4]  = 16;
+        let bit_masks[5]  = 32;
+        let bit_masks[6]  = 64;
+        let bit_masks[7]  = 128;
+        let bit_masks[8]  = 256;
+        let bit_masks[9]  = 512;
+        let bit_masks[10] = 1024;
+        let bit_masks[11] = 2048;
+        let bit_masks[12] = 4096;
+        let bit_masks[13] = 8192;
+        let bit_masks[14] = 16384;
+        let bit_masks[15] = 16384 + 16384;
+        
+        return;
     }
 
     /** Returns the absolute value of x. */
     function int abs(int x) {
+        if (x < 0) {
+            return -x;
+        }
+
+        return x;
     }
 
     /** Returns the product of x and y. 
@@ -23,6 +48,22 @@ class Math {
      *  the Jack expressions x*y and multiply(x,y) return the same value.
      */
     function int multiply(int x, int y) {
+        var int sum, shiftedX, j;
+
+        let sum = 0;
+        let shiftedX = x;
+        let j = 0;
+
+        while (j < 16) {
+            if (Math.bit(y, j)) {
+                let sum = sum + shiftedX;
+            }
+
+            let shiftedX = shiftedX + shiftedX;
+            let j = j + 1;
+        }
+
+        return sum;
     }
 
     /** Returns the integer part of x/y.
@@ -31,17 +72,77 @@ class Math {
      *  the Jack expressions x/y and divide(x,y) return the same value.
      */
     function int divide(int x, int y) {
+        var int negx, negy;
+        var int q;
+        var int result;
+
+        let negx = x < 0;
+        let negy = y < 0;
+        let x = Math.abs(x);
+        let y = Math.abs(y);
+
+        if (y > x) {
+            return 0;
+        }
+
+        let q = Math.divide(x, y + y);
+        if (x - (2 * q * y) < y) {
+            let result = q+q;
+        }
+        else {
+            let result = q+q+1;
+        }
+
+        if (negx = negy){
+            return result;
+        }
+        else{
+            return -result;
+        }
     }
 
     /** Returns the integer part of the square root of x. */
     function int sqrt(int x) {
+        var int j, y;
+        var int test;
+        var int test_square;
+
+        let y = 0;
+        let j = 7;
+
+        while (j > 0) {
+            let test = y + bit_masks[j];
+            let test_square = test + test;
+
+            if ((test > x) & (test_square > 0)) {
+                let y = test;
+            }
+
+            let j = j - 1;
+        }
+
+        return y;
     }
 
     /** Returns the greater number. */
     function int max(int a, int b) {
+        if (a > b) {
+            return a;
+        }
+
+        return b;
     }
 
     /** Returns the smaller number. */
     function int min(int a, int b) {
+        if (a < b) {
+            return a;
+        }
+
+        return b;
+    }
+    
+    function boolean bit(int x, int n) {
+        return ~((x & bit_masks[n]) = 0);
     }
 }
