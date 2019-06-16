@@ -10,25 +10,102 @@
  */ 
 class Memory {
 
+    static Array ram;
+    static Array freeList;
+    static Array NO_BLOCK;
+    static int heapBase;
+
+    static int FL_LENGTH;
+    static int FL_NEXT;
+    static int ALLOC_SIZE;
+
     /** Initializes the class. */
     function void init() {
+        let ram = 0;
+        
+        // init heap
+        let heapBase = 2048;
+        let freeList = heapBase;
+        let FL_LENGTH = 0;
+        let FL_NEXT = 1;
+        let freeList[FL_LENGTH] = 16384-2048;
+        let freeList[FL_NEXT] = null;
+
+        return;
     }
 
     /** Returns the RAM value at the given address. */
     function int peek(int address) {
+        return ram[address];
     }
 
     /** Sets the RAM value at the given address to the given value. */
     function void poke(int address, int value) {
+        let ram[address] = value;
+        return;
     }
 
     /** Finds an available RAM block of the given size and returns
      *  a reference to its base address. */
     function int alloc(int size) {
+        var Array found_block;
+        var Array result;
+        var int base_address;
+        var int offset;
+
+        let found_block = Memory.first_fit(size);
+        if (~(found_block = null)) {
+            let base_address = found_block;     
+            let offset = found_block[FL_LENGTH] - size;
+            let result = base_address + offset - 1;
+            let result[FL_NEXT] = null;
+            let result[FL_LENGTH] = size;
+            let found_block[FL_LENGTH] = found_block[FL_LENGTH] - size - 2;
+        }
+        else {
+            let result = freeList;
+            let freeList = freeList + size + 2;
+            let result[FL_NEXT] = freeList;
+            let result[FL_LENGTH] = size;
+            let freeList[FL_LENGTH] = freeList[FL_LENGTH] - size - 2;
+        }
+        
+        return result;
     }
 
     /** De-allocates the given object (cast as an array) by making
      *  it available for future allocations. */
     function void deAlloc(Array o) {
-    }    
+        var Array free;
+        let free = freeList;
+
+        while (~(free[FL_NEXT] = null)) {
+            let free = free[FL_NEXT];
+        }
+
+        let free[FL_NEXT] = o;
+
+        return;
+    }
+
+    /** Returns the base address of block which match the size the first. */
+    function int first_fit(int size){
+        var Array block;
+        var Array free;
+
+        let free = freeList;
+        let block = null;
+
+        while (~(free[FL_NEXT] = null)) {
+            if (free[FL_LENGTH] > size + 2){
+                let block = free;
+            }
+            else{
+                let free = free[FL_NEXT];
+            }
+        }
+        
+        return block;
+    }
+
 }
