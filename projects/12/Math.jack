@@ -145,4 +145,8 @@ class Math {
     function boolean bit(int x, int n) {
         return ~((x & bit_masks[n]) = 0);
     }
+
+    function int two_to_the(int bit) {
+        return bit_masks[bit];
+    }
 }
